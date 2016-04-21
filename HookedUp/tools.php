@@ -119,23 +119,33 @@ function curl_post($urlPart, array $post = array(), array $options = array())
  * Send a GET requst using cURL
  * Reference: Davic from Code2Design.com http://php.net/manual/en/function.curl-exec.php
  */ 
-function curl_get($urlPart, array $get = array(), array $options = array()) 
+function curl_getJSON($urlPart, array $data = array(), array $curlOpts = array()) 
 {    
-    $url = getAPIUrl() . $urlPart;
+    $result = curl_getLocal($urlPart, $data, $curlOpts);
+    return json_decode($result, true);
+}
+
+function curl_getLocal($urlPart, array $data = array(), array $curlOpts = array()) {
+    
+    $url = $url = getAPIUrl() . $urlPart;
+    return curl_get($url, $data, $curlOpts);
+}
+
+function curl_get($url, array $data = array(), array $curlOpts = array()) {
     
     $defaults = array( 
-        CURLOPT_URL => $url. (strpos($url, '?') === FALSE ? '?' : ''). http_build_query($get), 
+        CURLOPT_URL => $url. (strpos($url, '?') === FALSE ? '?' : ''). http_build_query($data), 
         CURLOPT_HEADER => 0, 
         CURLOPT_RETURNTRANSFER => TRUE, 
         CURLOPT_TIMEOUT => 4 
     ); 
     
     $ch = curl_init(); 
-    curl_setopt_array($ch, ($options + $defaults)); 
+    curl_setopt_array($ch, ($curlOpts + $defaults)); 
     if( ! $result = curl_exec($ch)) 
     { 
         trigger_error(curl_error($ch)); 
     } 
     curl_close($ch);
-    return json_decode($result, true);
+    return $result;
 }

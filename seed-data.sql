@@ -26,7 +26,7 @@ CREATE TABLE `file` (
 CREATE TABLE `image` (
     id varchar(36) NOT NULL PRIMARY KEY,
     createdAt timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    path varchar(60) NOT NULL UNIQUE
+    path varchar(200) NOT NULL UNIQUE
 ) ENGINE=INNODB;
 
 INSERT INTO `image` VALUES
@@ -92,7 +92,7 @@ CREATE TABLE `userBlock` (
     FOREIGN KEY (destinationUserId) REFERENCES user (id),
     UNIQUE (originUserId, destinationUserId)
 ) ENGINE=INNODB;
-    
+
 CREATE TABLE `message` (
     id varchar(36) NOT NULL PRIMARY KEY,
     createdAt timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,

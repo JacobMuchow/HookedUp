@@ -11,7 +11,7 @@
         $(document).ready(function() {
             console.log("hi");
             $.getJSON("api/feed/index.php", function(data) {
-                console.log(data); 
+                console.log(data);
             });
         });
     </script>
@@ -22,7 +22,13 @@
 
 <div class="container">
     <p id="result">
-        This page will show the user's feed.
+        <?php 
+            $result = curl_getLocal("templates/image.php", array(
+                'id' => 'Image-1',
+                'width' => '50',
+            ));
+            echo $result;
+        ?>
     </p>
 </div>
 
