@@ -59,12 +59,12 @@ function isUserLoggedIn() {
     }
     
     $url = "/api/auth/authenticate.php";
-    $fields = array(
+    $data = array(
         'id' => $_SESSION['id'],
         'sessionId' => session_id()
     );
     
-    $result = curl_post($url, $fields);
+    $result = makeAPIRequest($url, 'POST', $data);
     
     global $loggedIn;
     $loggedIn = $result['result'];
@@ -95,7 +95,7 @@ function getUserFullName() {
  */
  function getImageUrl($imageId) {
      
-    $result = curl_getJSON('api/image/index.php', array(
+    $result = makeAPIRequest('api/image/index.php', 'GET', array(
         'id' => $imageId
     ));
     
@@ -103,65 +103,43 @@ function getUserFullName() {
  }
 
 /** 
- * Send a POST requst using cURL
- * Reference: Davic from Code2Design.com http://php.net/manual/en/function.curl-exec.php
+ * Make a request using cURL
+ * 
+ * Adapted from: Davic from Code2Design.com http://php.net/manual/en/function.curl-exec.php
  */
-function curl_post($urlPart, array $post = array(), array $options = array()) 
-{
-    $url = getAPIUrl() . $urlPart;
+ function makeAPIRequest($urlPart, $method, array $data = array()) {
+     $url = getAPIUrl() . $urlPart;
+     $result = makeRequest($url, $method, $data);
+     return json_decode($result, true);
+ }
+ 
+ function makeRequest($url, $method, array $data = array()) {
+     
+     if($method === "GET") {
+         $url .= (strpos($url, '?') === FALSE ? '?' : '') . http_build_query($data);
+     }
+     
+     $curlOpts = array(
+         CURLOPT_URL => $url,
+         CURLOPT_HEADER => 0,
+         CURLOPT_RETURNTRANSFER => 1,
+         CURLOPT_TIMEOUT => 4
+     );
+     
+     if($method !== "GET") {
+         $curlOpts[CURLOPT_POST] = 1;
+         $curlOpts[CURLOPT_POSTFIELDS] = http_build_query($data);
+         $curlOpts[CURLOPT_FRESH_CONNECT] = 1;
+         $curlOpts[CURLOPT_FORBID_REUSE] = 1;
+     }
+     
+    $curl = curl_init(); 
+    curl_setopt_array($curl, $curlOpts); 
     
-    $defaults = array( 
-        CURLOPT_POST => 1, 
-        CURLOPT_HEADER => 0, 
-        CURLOPT_URL => $url, 
-        CURLOPT_FRESH_CONNECT => 1, 
-        CURLOPT_RETURNTRANSFER => 1, 
-        CURLOPT_FORBID_REUSE => 1, 
-        CURLOPT_TIMEOUT => 4, 
-        CURLOPT_POSTFIELDS => http_build_query($post) 
-    ); 
-
-    $ch = curl_init(); 
-    curl_setopt_array($ch, ($options + $defaults)); 
-    if( ! $result = curl_exec($ch)) 
-    { 
-        trigger_error(curl_error($ch)); 
-    } 
-    curl_close($ch);
-    return json_decode($result, true); 
-} 
-
-/** 
- * Functions for sending GET requests using cURL
- */ 
-function curl_getJSON($urlPart, array $data = array(), array $curlOpts = array()) 
-{    
-    $result = curl_getLocal($urlPart, $data, $curlOpts);
-    return json_decode($result, true);
-}
-
-function curl_getLocal($urlPart, array $data = array(), array $curlOpts = array()) {
+    if( ! $result = curl_exec($curl)) { 
+        trigger_error(curl_error($curl)); 
+    }
     
-    $url = $url = getAPIUrl() . $urlPart;
-    return curl_get($url, $data, $curlOpts);
-}
-
-//Reference: Davic from Code2Design.com http://php.net/manual/en/function.curl-exec.php
-function curl_get($url, array $data = array(), array $curlOpts = array()) {
-    
-    $defaults = array( 
-        CURLOPT_URL => $url. (strpos($url, '?') === FALSE ? '?' : ''). http_build_query($data), 
-        CURLOPT_HEADER => 0, 
-        CURLOPT_RETURNTRANSFER => TRUE, 
-        CURLOPT_TIMEOUT => 4 
-    ); 
-    
-    $ch = curl_init(); 
-    curl_setopt_array($ch, ($curlOpts + $defaults)); 
-    if( ! $result = curl_exec($ch)) 
-    { 
-        trigger_error(curl_error($ch)); 
-    } 
-    curl_close($ch);
+    curl_close($curl);
     return $result;
-}
+ }
