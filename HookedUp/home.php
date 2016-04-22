@@ -9,7 +9,6 @@
     </style>
     <script>
         $(document).ready(function() {
-            console.log("hi");
             $.getJSON("api/feed/index.php", function(data) {
                 console.log(data);
             });
@@ -22,13 +21,7 @@
 
 <div class="container">
     <p id="result">
-        <?php 
-            $result = curl_getLocal("templates/image.php", array(
-                'id' => 'Image-1',
-                'width' => '50',
-            ));
-            echo $result;
-        ?>
+        <img src="<?= getImageUrl('Image-1'); ?>" width="100" height="100">
     </p>
 </div>
 

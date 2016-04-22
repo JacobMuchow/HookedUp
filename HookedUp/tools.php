@@ -3,16 +3,13 @@
 $loggedIn = false;
 
 /**
- * Returns GET data safely scrubbed using htmlspecialchars()
+ * Helper functions for getting request data
  */
 function getGETSafe($key) {
     $val = htmlspecialchars($_GET[$key]);
     return empty($val) ? NULL : $val;
 }
 
-/**
- * Returns POST data safely scrubbed using htmlspecialchars()
- */
 function getPOSTSafe($key) {
     $val = htmlspecialchars($_POST[$key]);
     return empty($val) ? NULL : $val;
@@ -74,6 +71,13 @@ function isUserLoggedIn() {
     return $loggedIn;
 }
 
+/**
+ * Helper functions for getting logged in user data. 
+ */
+function getUserId() {
+    return $_SESSION['id'];
+}
+
 function getUserFirstName() {
     return $_SESSION['firstName'];
 }
@@ -86,10 +90,22 @@ function getUserFullName() {
     return getUserFirstName() . " " . getUserLastName();
 }
 
+/**
+ * Template functions
+ */
+ function getImageUrl($imageId) {
+     
+    $result = curl_getJSON('api/image/index.php', array(
+        'id' => $imageId
+    ));
+    
+    return $result['success'] ? $result['result']['path'] : "";
+ }
+
 /** 
  * Send a POST requst using cURL
  * Reference: Davic from Code2Design.com http://php.net/manual/en/function.curl-exec.php
- */ 
+ */
 function curl_post($urlPart, array $post = array(), array $options = array()) 
 {
     $url = getAPIUrl() . $urlPart;
@@ -116,8 +132,7 @@ function curl_post($urlPart, array $post = array(), array $options = array())
 } 
 
 /** 
- * Send a GET requst using cURL
- * Reference: Davic from Code2Design.com http://php.net/manual/en/function.curl-exec.php
+ * Functions for sending GET requests using cURL
  */ 
 function curl_getJSON($urlPart, array $data = array(), array $curlOpts = array()) 
 {    
@@ -131,6 +146,7 @@ function curl_getLocal($urlPart, array $data = array(), array $curlOpts = array(
     return curl_get($url, $data, $curlOpts);
 }
 
+//Reference: Davic from Code2Design.com http://php.net/manual/en/function.curl-exec.php
 function curl_get($url, array $data = array(), array $curlOpts = array()) {
     
     $defaults = array( 
